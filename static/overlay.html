@@ -4,8 +4,8 @@
 <script type="text/javascript">
     defaultStreamerName="acapellawolf"
     defaultInterval=30
-    basedirForImages="" // for instance, "images/", blank is fine if they're with the html
-    songOverrideImages=[ // add first an image before the tags if all attributes match
+    defaultBasedirForImages="" // for instance, "images/", blank is fine if they're with the html
+/*    defaultAddSongImages=[ // add first an image before the tags if all attributes match
        { 
            songName: "Breaths", // Matches any song called Breaths by any artist
            image: "warmup.png"
@@ -16,7 +16,9 @@
            image: "songswap.png"
        }
     ]
-    defaultOnlyTags=[13380,1337] // if set, only display these tags
+    defaultOnlyTags=[13380,1337] // if set, only display these tags */
+    defaultOnlyTags=[]
+    defaultAddSongImages=[]
 </script>
 <html>
 <body>
@@ -50,6 +52,30 @@ function jsParams() {
     }
 }
 
+function jsonParamDefault(paramName, defaultValue) {
+    let returnValue = defaultValue;
+    p = jsParams()
+    if (typeof p == "object") {
+        let paramValue = p[paramName];
+        if (typeof paramValue != "undefined") {
+            returnValue = JSON.parse(decodeURIComponent(paramValue));
+        }
+    }
+    return returnValue
+}
+
+function b64ParamDefault(paramName, defaultValue) {
+    let returnValue = defaultValue;
+    p = jsParams()
+    if (typeof p == "object") {
+        let paramValue = p[paramName];
+        if (typeof paramValue != "undefined") {
+            returnValue = JSON.parse(atob(paramValue));
+        }
+    }
+    return returnValue
+}
+
 function paramDefault(paramName, defaultValue) {
     let returnValue = defaultValue;
     p = jsParams()
@@ -73,8 +99,10 @@ function main() {
     loadQueue().then(
         function(value) {
             let HTMLForDiv = ""
+            let basedirForImages = paramDefault("basedirForImages",defaultBasedirForImages)
             theCurrentSong = currentSong(value);
-            songOverrideImages.forEach(function(value,index,array) {
+            let addSongImages = b64ParamDefault("addSongImages",defaultAddSongImages);
+            addSongImages.forEach(function(value,index,array) {
                 console.log(value)
                 if ((typeof value.songName == "string") &&
                 (typeof value.songArtist == "string")) {
@@ -102,7 +130,8 @@ function main() {
             theSongTags = songTags(theCurrentSong);
             console.log("Tags:");
             console.log(theSongTags);
-            onlyTags = paramDefault("onlytags",defaultOnlyTags)
+            onlyTags = jsonParamDefault("onlyTags",defaultOnlyTags)
+            console.log(onlyTags)
             theSongTags.forEach(function(value,index,array) {
                 if ((Array.isArray(onlyTags)) && (onlyTags.length > 0)) {
                     if (onlyTags.indexOf(value) != -1) {

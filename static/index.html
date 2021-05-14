@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        <meta name="description" content="" />
+        <meta name="author" content="" />
+        <title>StreamerSongList Addon Overlay</title>
+        <!-- Favicon-->
+        <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
+        <!-- Core theme CSS (includes Bootstrap)-->
+        <link href="css/styles.css" rel="stylesheet" />
+    </head>
+    <body>
+        <!-- Navigation-->
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark static-top">
+            <div class="container">
+                <a class="navbar-brand" href="#!">StreamerSongList Addon Overlay</a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
+                <div class="collapse navbar-collapse" id="navbarResponsive">
+                    <ul class="navbar-nav ml-auto">
+                        <li class="nav-item active">
+                            <a class="nav-link" href="#!">
+                                Home
+                                <span class="sr-only">(current)</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+        <!-- Page content-->
+        <div class="container">
+            <div class="text-center">
+                <h1 class="mt-5">StreamerSongList Addon Overlay</h1>
+                <p class="lead">A tag-based overlay for StreamerSongList users.  Display images based on your tags in StreamerSongList!</p>
+                <p>Enter an existing overlay url to edit here : </p>
+                <p><input name="existing" id="existing"></input><button onclick="javascript:importURL();">Import</button></p>
+                <p>or just create a new overlay with the following settings :</p>
+                <p>
+                <center><table>
+                    <tr>
+                        <th><label for="streamername">Streamer name (twitch id): </label></th>
+                        <td><input name="streamername" id="streamername" value="acapellawolf"></td>
+                    </tr>
+                    <tr>
+                        <th><label for="basedirForImages">Base url for images: </label></th>
+                        <td><input name="basedirForImages" id="basedirForImages" value=""></td>
+                    </tr>
+                    <tr><td colspan=2>Note: The images need to named <b><tt>{{tag number}}.png</tt></b><br/>
+                    and be accessible from the computer you're running OBS etc. on.<br/>
+                    One option would be file://C|/Users/MyUserName/Documents/Overlays/ etc.<br/>
+                    Another option would be an S3 bucket or similar where you upload them.<br/>
+                    If you are running your own copy of this code, you can leave this blank.<br/>
+                    Getting your tag numbers is annoying, and requires authorization etc.<br/>
+                    The easy way is to export your songlist from StreamerSongList, the tag numbers are in it.
+                    </td></tr>
+                    <tr>
+                        <th><label for="onlytags">Only show images for these tags: </label></th>
+                        <td><input name="onlytags" id="onlytags" value=""></td>
+                    </tr>
+                    <tr>
+                        <th><label for="addSongImages">Additional song-based images: </label></th>
+                        <td><input name="addSongImages" id="addSongImages" value=""></td>
+                    </tr>
+                    <tr><td colspan=2>Advanced feature! You need to craft some json like this: <br/>
+                        <pre>
+    [
+       { 
+           "songName": "Breaths",
+           "image": "warmup.png"
+       },
+       {
+           "songName": "Know Me",
+           "songArtist": "Moonlight Social",
+           "image": "songswap.png"
+       }
+    ]
+                        </pre>
+                    It will add an image for a complete match.  The first in that example matches <br/>
+                    <i><b>any</b></i> song called Breaths, the second only matches "Know Me" by "Moonlight Social"
+                    </td></tr>
+                    <tr>
+                        <th><label for="interval">Interval: </label></th>
+                        <td><input name="interval" id="interval" value=""></td>
+                        <tr><td colspan=2>It's not documented what an acceptable interval is for checking<br/>
+                            the StreamerSongList API for the next song in the list, so don't go too low here.<br/>
+                            It's in seconds, default is 30 and I think 20 would be a sensible minimum.
+                        </td></tr>
+                    </tr>
+                </table></center>
+                </p>
+                <p><button type="button" onclick="javascript:generateURL()">Generate Overlay URL</button></p>
+                <p id="overlayUrl"></p>
+                <p>Generate the url, then copy it into a browser source in OBS, Twitch studio or whatever.</p>
+            </div>
+        </div>
+        <!-- Bootstrap core JS-->
+        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
+        <!-- Core theme JS-->
+        <script src="js/scripts.js"></script>
+        <!-- Client JS for doing the magic!-->
+        <script src="js/overlaygen.js"></script>
+    </body>
+</html>
