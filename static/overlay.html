@@ -1,0 +1,115 @@
+<!--
+    Streamer name can be set here or passed in url as #streamer=<<twitchname>>        
+-->
+<script type="text/javascript">
+    defaultStreamerName="acapellawolf"
+    basedirForImages="" // for instance, "images/", blank is fine if they're with the html
+    songOverrideImages=[ // add first an image before the tags if all attributes match
+       { 
+           songName: "Breaths", // Matches any song called Breaths by any artist
+           image: "warmup.png"
+       },
+       {
+           songName: "Know Me", // Matches only the song called Know Me by the artist "Moonlight Social"
+           songArtist: "Moonlight Social",
+           image: "songswap.png"
+       }
+    ]
+    onlyTags=[13380,1337] // if set, only display these tags
+</script>
+<html>
+<body>
+<div id="currentsongdiv">
+
+</div>
+</body>
+</html>
+<script type="text/javascript">
+function currentSong(queue) {
+	return queue.list[0];
+}
+
+function songTags(song) {
+    return song.song.attributeIds;
+}
+
+function jsParams() {
+    function paramsToObject(entries) {
+        const result = {}
+        for(const [key, value] of entries) { // each 'entry' is a [key, value] tupple
+            result[key] = value;
+        }
+        return result;
+    }
+    if (window.location.href.indexOf('#') > 0) {
+        const paramsString = window.location.href.substring(window.location.href.indexOf("#")+1);
+        const searchParams = new URLSearchParams(paramsString);
+        const entries = searchParams.entries();
+        return paramsToObject(entries)
+    }
+}
+
+async function loadQueue() {
+    let streamerName = defaultStreamerName;
+    p = jsParams()
+    if (typeof p == "object") {
+        let paramStreamerName = p.streamer;
+        if (typeof paramStreamerName == "string") {
+            console.log(paramStreamerName);
+            if (paramStreamerName.length > 1) {
+                streamerName = paramStreamerName;
+            }
+        }
+    }
+    let request = await fetch('https://api.streamersonglist.com/v1/streamers/'+streamerName+'/queue');
+    let response = await request.json();
+    return response
+}
+
+loadQueue().then(
+	function(value) {
+        let HTMLForDiv = ""
+        theCurrentSong = currentSong(value);
+        songOverrideImages.forEach(function(value,index,array) {
+            console.log(value)
+            if ((typeof value.songName == "string") &&
+              (typeof value.songArtist == "string")) {
+                  // Both Name and artist have to match
+                  if ((theCurrentSong.song.artist == value.songArtist) &&
+                  (theCurrentSong.song.title == value.songName)) {
+                    // MATCH! Override time!
+                    HTMLForDiv = '<img src="'+basedirForImages+value.image+'"><br/>';
+                  }
+            } else if (typeof value.songName == "string") {
+                // Name match check
+                  if (theCurrentSong.song.title == value.songName) {
+                    // MATCH! Override time!
+                    HTMLForDiv = '<img src="'+basedirForImages+value.image+'"><br/>';
+                  }
+            } else if (typeof value.songArtist == "string") {
+                // Artist match check
+                  if (theCurrentSong.song.artist == value.songArtist) {
+                    // MATCH! Override time!
+                    HTMLForDiv = '<img src="'+basedirForImages+value.image+'"><br/>';
+                  }
+            }
+        });
+        console.log(theCurrentSong);
+        theSongTags = songTags(theCurrentSong);
+        console.log("Tags:");
+        console.log(theSongTags);
+        theSongTags.forEach(function(value,index,array) {
+            if ((Array.isArray(onlyTags)) && (onlyTags.length > 0)) {
+                if (onlyTags.indexOf(value) != -1) {
+                    HTMLForDiv = HTMLForDiv + '<img src="'+basedirForImages+value+'.png"><br/>';
+                }
+            } else {
+                HTMLForDiv = HTMLForDiv + '<img src="'+basedirForImages+value+'.png"><br/>';
+            }
+        });
+        document.getElementById("currentsongdiv").innerHTML = HTMLForDiv;
+    },
+  function(error) {console.log(error);}
+)
+
+</script>
