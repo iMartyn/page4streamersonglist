@@ -3,6 +3,7 @@
 -->
 <script type="text/javascript">
     defaultStreamerName="acapellawolf"
+    defaultInterval=30
     basedirForImages="" // for instance, "images/", blank is fine if they're with the html
     songOverrideImages=[ // add first an image before the tags if all attributes match
        { 
@@ -15,7 +16,7 @@
            image: "songswap.png"
        }
     ]
-    onlyTags=[13380,1337] // if set, only display these tags
+    defaultOnlyTags=[13380,1337] // if set, only display these tags
 </script>
 <html>
 <body>
@@ -49,67 +50,77 @@ function jsParams() {
     }
 }
 
-async function loadQueue() {
-    let streamerName = defaultStreamerName;
+function paramDefault(paramName, defaultValue) {
+    let returnValue = defaultValue;
     p = jsParams()
     if (typeof p == "object") {
-        let paramStreamerName = p.streamer;
-        if (typeof paramStreamerName == "string") {
-            console.log(paramStreamerName);
-            if (paramStreamerName.length > 1) {
-                streamerName = paramStreamerName;
-            }
+        let paramValue = p[paramName];
+        if (typeof paramValue != "undefined") {
+            returnValue = paramValue;
         }
     }
+    return returnValue
+}
+
+async function loadQueue() {
+    let streamerName = paramDefault("streamer",defaultStreamerName);
     let request = await fetch('https://api.streamersonglist.com/v1/streamers/'+streamerName+'/queue');
     let response = await request.json();
     return response
 }
 
-loadQueue().then(
-	function(value) {
-        let HTMLForDiv = ""
-        theCurrentSong = currentSong(value);
-        songOverrideImages.forEach(function(value,index,array) {
-            console.log(value)
-            if ((typeof value.songName == "string") &&
-              (typeof value.songArtist == "string")) {
-                  // Both Name and artist have to match
-                  if ((theCurrentSong.song.artist == value.songArtist) &&
-                  (theCurrentSong.song.title == value.songName)) {
-                    // MATCH! Override time!
-                    HTMLForDiv = '<img src="'+basedirForImages+value.image+'"><br/>';
-                  }
-            } else if (typeof value.songName == "string") {
-                // Name match check
-                  if (theCurrentSong.song.title == value.songName) {
-                    // MATCH! Override time!
-                    HTMLForDiv = '<img src="'+basedirForImages+value.image+'"><br/>';
-                  }
-            } else if (typeof value.songArtist == "string") {
-                // Artist match check
-                  if (theCurrentSong.song.artist == value.songArtist) {
-                    // MATCH! Override time!
-                    HTMLForDiv = '<img src="'+basedirForImages+value.image+'"><br/>';
-                  }
-            }
-        });
-        console.log(theCurrentSong);
-        theSongTags = songTags(theCurrentSong);
-        console.log("Tags:");
-        console.log(theSongTags);
-        theSongTags.forEach(function(value,index,array) {
-            if ((Array.isArray(onlyTags)) && (onlyTags.length > 0)) {
-                if (onlyTags.indexOf(value) != -1) {
+function main() {
+    loadQueue().then(
+        function(value) {
+            let HTMLForDiv = ""
+            theCurrentSong = currentSong(value);
+            songOverrideImages.forEach(function(value,index,array) {
+                console.log(value)
+                if ((typeof value.songName == "string") &&
+                (typeof value.songArtist == "string")) {
+                    // Both Name and artist have to match
+                    if ((theCurrentSong.song.artist == value.songArtist) &&
+                    (theCurrentSong.song.title == value.songName)) {
+                        // MATCH! Override time!
+                        HTMLForDiv = '<img src="'+basedirForImages+value.image+'"><br/>';
+                    }
+                } else if (typeof value.songName == "string") {
+                    // Name match check
+                    if (theCurrentSong.song.title == value.songName) {
+                        // MATCH! Override time!
+                        HTMLForDiv = '<img src="'+basedirForImages+value.image+'"><br/>';
+                    }
+                } else if (typeof value.songArtist == "string") {
+                    // Artist match check
+                    if (theCurrentSong.song.artist == value.songArtist) {
+                        // MATCH! Override time!
+                        HTMLForDiv = '<img src="'+basedirForImages+value.image+'"><br/>';
+                    }
+                }
+            });
+            console.log(theCurrentSong);
+            theSongTags = songTags(theCurrentSong);
+            console.log("Tags:");
+            console.log(theSongTags);
+            onlyTags = paramDefault("onlytags",defaultOnlyTags)
+            theSongTags.forEach(function(value,index,array) {
+                if ((Array.isArray(onlyTags)) && (onlyTags.length > 0)) {
+                    if (onlyTags.indexOf(value) != -1) {
+                        HTMLForDiv = HTMLForDiv + '<img src="'+basedirForImages+value+'.png"><br/>';
+                    }
+                } else {
                     HTMLForDiv = HTMLForDiv + '<img src="'+basedirForImages+value+'.png"><br/>';
                 }
-            } else {
-                HTMLForDiv = HTMLForDiv + '<img src="'+basedirForImages+value+'.png"><br/>';
-            }
-        });
-        document.getElementById("currentsongdiv").innerHTML = HTMLForDiv;
-    },
-  function(error) {console.log(error);}
-)
+            });
+            document.getElementById("currentsongdiv").innerHTML = HTMLForDiv;
+        },
+    function(error) {console.log(error);}
+    )
+}
+
+main();
+let interval = paramDefault("interval",defaultInterval)
+console.log(interval*1000);
+setInterval(main,interval*1000);
 
 </script>
